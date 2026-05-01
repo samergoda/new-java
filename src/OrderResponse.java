@@ -1,0 +1,1 @@
+public record OrderResponse(String orderId, double totalPrice) {}
