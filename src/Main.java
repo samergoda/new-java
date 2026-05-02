@@ -4,7 +4,11 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.List;
-//import com.fasterxml.jackson.databind.ObjectMapper;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLParameters;
+import java.security.NoSuchAlgorithmException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
 
 public class Main {
 
@@ -23,23 +27,33 @@ public class Main {
 
     // Fetch real user from real api
     public static User fetchUser(String id) throws Exception {
+        try{
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("https://jsonplaceholder.typicode.com/users/" + id))
+                .timeout(Duration.ofSeconds(20))
                 .GET()
                 .build();
 
-        HttpResponse<String> response = client.send(
-                request,
-                HttpResponse.BodyHandlers.ofString()
-        );
+            HttpResponse<String> response = client.send(
+                    request,
+                    HttpResponse.BodyHandlers.ofString()
+            );
 
-//        ObjectMapper mapper = new ObjectMapper();
+            // Parse JSON properly with Jackson
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode jsonNode = mapper.readTree(response.body());
 
-        System.out.println("response: " + response.body());
+            String userId = jsonNode.get("id").asText();
+            String name = jsonNode.get("name").asText();
+            String email = jsonNode.get("email").asText();
 
-        // TODO: parse JSON properly
-//        return new User("1","samer","test@test.com");
-        return new User(id, response.body().split("\"name\":")[1].split(",")[0], response.body().split("\"email\":")[1].split(",")[0]);
+            System.out.println("Fetched user: " + name + " (" + email + ")");
+
+            return new User(userId, name, email);
+        } catch (Exception error) {
+            System.out.println("Error fetching user: " + error.getMessage());
+            throw error;
+        }
     }
 
 
