@@ -16,9 +16,9 @@ public class Main {
         OrderController orderController = new OrderController();
         Product p1 = new Product("1","test product",10);
         Order order1 = new Order("1",user, List.of(p1));
-        orderController.create(order1);
+        OrderResponse orderResponse = orderController.create(order1);
         CardPayment card = new CardPayment();
-        card.processPayment(order1);
+        card.processPayment(orderResponse);
     }
 
     // Fetch real user from real api
